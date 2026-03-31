@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/physics.test.js",
+    "start":  "node scripts/serve.js",
+    "test":   "node --test tests/physics.test.js",
     "server": "node server/index.js"
   }
 }
