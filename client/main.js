@@ -25,6 +25,8 @@ const game     = new Game();
 const renderer = new Renderer();
 const ui       = new UI();
 
+game.bindTouch(canvas);
+
 let last = 0;
 function loop(ts) {
   const dt = Math.min((ts - last) / 1000, 0.05); // cap at 50ms prevents spiral-of-death

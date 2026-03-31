@@ -3,6 +3,7 @@ import {
   FLOOR_Y, NET_X, NET_W, NET_HEIGHT,
   BALL_RADIUS, PLAYER_W, PLAYER_H,
 } from './physics.js';
+import { TOUCH_BUTTONS } from './ui.js';
 
 export class Renderer {
   draw(ctx, state) {
@@ -85,5 +86,21 @@ export class Renderer {
         ctx.fill();
       }
     });
+
+    // 9. Touch controls (touch devices only)
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      for (const btn of Object.values(TOUCH_BUTTONS)) {
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.beginPath();
+        ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 12);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+      }
+      ctx.textBaseline = 'alphabetic';
+    }
   }
 }

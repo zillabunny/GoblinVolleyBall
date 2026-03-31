@@ -1,3 +1,6 @@
+import { TOUCH_BUTTONS } from './ui.js';
+import { CANVAS_W, CANVAS_H } from './physics.js';
+
 export class InputState {
   constructor() {
     this.left = false; this.right = false;
@@ -19,6 +22,45 @@ export class InputState {
   bind() {
     window.addEventListener('keydown', e => this._onKey(e, true));
     window.addEventListener('keyup',   e => this._onKey(e, false));
+  }
+
+  bindTouch(canvas) {
+    const onStart = e => {
+      e.preventDefault();
+      const rect   = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_W / rect.width;
+      const scaleY = CANVAS_H / rect.height;
+      for (const touch of e.changedTouches) {
+        const gx = (touch.clientX - rect.left) * scaleX;
+        const gy = (touch.clientY - rect.top)  * scaleY;
+        for (const [key, btn] of Object.entries(TOUCH_BUTTONS)) {
+          if (gx >= btn.x && gx <= btn.x + btn.w &&
+              gy >= btn.y && gy <= btn.y + btn.h) {
+            this[key] = true;
+            if (key === 'hit') this._hitJustPressed = true;
+          }
+        }
+      }
+    };
+    const onEnd = e => {
+      e.preventDefault();
+      const rect   = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_W / rect.width;
+      const scaleY = CANVAS_H / rect.height;
+      for (const touch of e.changedTouches) {
+        const gx = (touch.clientX - rect.left) * scaleX;
+        const gy = (touch.clientY - rect.top)  * scaleY;
+        for (const [key, btn] of Object.entries(TOUCH_BUTTONS)) {
+          if (gx >= btn.x && gx <= btn.x + btn.w &&
+              gy >= btn.y && gy <= btn.y + btn.h) {
+            this[key] = false;
+          }
+        }
+      }
+    };
+    canvas.addEventListener('touchstart',  onStart, { passive: false });
+    canvas.addEventListener('touchend',    onEnd,   { passive: false });
+    canvas.addEventListener('touchcancel', onEnd,   { passive: false });
   }
 
   _onKey(e, down) {

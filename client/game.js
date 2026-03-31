@@ -1,6 +1,7 @@
 import { physicsStep, stepPlayer, FLOOR_Y, PLAYER_H, PLAYER_W, BALL_RADIUS,
          HIT_RADIUS, HIT_MIN_DIST, HIT_POWER, NET_X, PLAYER_SPEED, JUMP_FORCE } from './physics.js';
 import { InputState } from './input.js';
+import { AIController } from './ai.js';
 
 export function applyInput(player, input) {
   if (input.left)       { player.vx = -PLAYER_SPEED; player.facing = -1; }
@@ -82,6 +83,7 @@ export class Game {
     };
     this._input = new InputState();
     this._input.bind();
+    this._ai = new AIController();
 
     window.addEventListener('keydown', e => {
       if (e.code === 'KeyR' && this._state.phase === 'game_over') this.reset();
@@ -101,17 +103,26 @@ export class Game {
     resetPositions(this._state);
   }
 
+  bindTouch(canvas) {
+    this._input.bindTouch(canvas);
+  }
+
   update(dt) {
     const state = this._state;
 
-    // 1. Apply human input to player 1
-    applyInput(state.players[0], this._input);
+    // 1. Get AI input for player 2
+    const p2Input = this._ai.update(dt, state.players[1], state.ball, state);
 
-    // 2. Phase-specific logic
+    // 2. Apply human input to player 1, AI input to player 2
+    applyInput(state.players[0], this._input);
+    applyInput(state.players[1], p2Input);
+
+    // 3. Phase-specific logic
     if (state.phase === 'playing') {
       physicsStep(state, dt);
-      // Try hit for player 1
+      // Try hit for both players
       tryHit(state.players[0], 0, this._input, state.ball, state);
+      tryHit(state.players[1], 1, p2Input, state.ball, state);
       // Score check
       if (state.ball.y + BALL_RADIUS >= FLOOR_Y) {
         const scorer = state.ball.x < NET_X ? 1 : 0;
@@ -144,7 +155,7 @@ export class Game {
     }
     // game_over: do nothing, wait for R key
 
-    // 3. Consume input one-shot
+    // 4. Consume input one-shot
     this._input.tick();
   }
 }

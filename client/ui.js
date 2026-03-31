@@ -1,3 +1,10 @@
+export const TOUCH_BUTTONS = {
+  left:  { x: 10,  y: 290, w: 90, h: 90, label: '◀' },
+  right: { x: 110, y: 290, w: 90, h: 90, label: '▶' },
+  jump:  { x: 600, y: 200, w: 90, h: 90, label: '▲' },
+  hit:   { x: 700, y: 290, w: 90, h: 90, label: '●' },
+};
+
 export class UI {
   draw(ctx, state) {
     ctx.textAlign = 'center';
