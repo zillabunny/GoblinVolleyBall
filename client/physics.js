@@ -75,9 +75,11 @@ function applyPlayerBallCollision(b, players) {
       b.vx -= 2 * dot * nx * RESTITUTION;
       b.vy -= 2 * dot * ny * RESTITUTION;
       const forwardSign = p.x < NET_X ? 1 : -1;
-      // Head/top bounce: push ball forward
+      // Head/top bounce: always bounce forward toward net
       if (ny < -0.5) {
-        b.vx += forwardSign * 180;
+        if (b.vx * forwardSign < 250) {
+          b.vx = forwardSign * 250;
+        }
       }
       // Front-face top-half hit (blocking): pop ball upward so it clears the net
       const isFrontFace = nx * forwardSign > 0.3;

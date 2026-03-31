@@ -71,6 +71,35 @@ export class Renderer {
       ctx.fillStyle = playerColors[i];
       ctx.fillRect(p.x, p.y, PLAYER_W, PLAYER_H);
 
+      // Bikini (player 2 only)
+      if (i === 1) {
+        ctx.fillStyle = '#ff8c00';
+        // Top — horizontal band
+        ctx.fillRect(p.x + 4, p.y + 22, 32, 3);
+        // Top — two downward-pointing triangle cups
+        ctx.beginPath();
+        ctx.moveTo(p.x + 5,  p.y + 22);
+        ctx.lineTo(p.x + 19, p.y + 22);
+        ctx.lineTo(p.x + 12, p.y + 32);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(p.x + 21, p.y + 22);
+        ctx.lineTo(p.x + 35, p.y + 22);
+        ctx.lineTo(p.x + 28, p.y + 32);
+        ctx.closePath();
+        ctx.fill();
+        // Waistband
+        ctx.fillRect(p.x + 4, p.y + 35, 32, 3);
+        // Bottom — downward-pointing triangle
+        ctx.beginPath();
+        ctx.moveTo(p.x + 11, p.y + 38);
+        ctx.lineTo(p.x + 29, p.y + 38);
+        ctx.lineTo(p.x + 20, p.y + 48);
+        ctx.closePath();
+        ctx.fill();
+      }
+
       // Eyes (white sclera)
       const eyePositions = [{ ex: p.x + 8, ey: p.y + 14 }, { ex: p.x + 28, ey: p.y + 14 }];
       for (const { ex, ey } of eyePositions) {
