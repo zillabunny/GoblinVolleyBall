@@ -1,7 +1,7 @@
 import {
   CANVAS_W, CANVAS_H,
   FLOOR_Y, NET_X, NET_W, NET_HEIGHT,
-  BALL_RADIUS,
+  BALL_RADIUS, PLAYER_W, PLAYER_H,
 } from './physics.js';
 
 export class Renderer {
@@ -62,5 +62,28 @@ export class Renderer {
     ctx.strokeStyle = '#b8a030';
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    // 8. Players
+    const playerColors = ['#4a7c3f', '#7c3f4a'];
+    state.players.forEach((p, i) => {
+      // Body
+      ctx.fillStyle = playerColors[i];
+      ctx.fillRect(p.x, p.y, PLAYER_W, PLAYER_H);
+
+      // Eyes (white sclera)
+      const eyePositions = [{ ex: p.x + 8, ey: p.y + 14 }, { ex: p.x + 28, ey: p.y + 14 }];
+      for (const { ex, ey } of eyePositions) {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(ex, ey, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pupils (black, offset in facing direction)
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(ex + 2 * p.facing, ey, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
   }
 }

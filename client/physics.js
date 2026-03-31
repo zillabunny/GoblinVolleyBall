@@ -16,7 +16,34 @@ export const BOUNCE_DAMP   = 0.75;
 export const RESTITUTION   = 0.85;
 export const HIT_MIN_DIST  = 8;
 
+function stepPlayer(p, dt, isLeftPlayer) {
+  p.vy += GRAVITY * dt;
+  p.x  += p.vx * dt;
+  p.y  += p.vy * dt;
+
+  // Floor
+  if (p.y + PLAYER_H >= FLOOR_Y) {
+    p.y = FLOOR_Y - PLAYER_H;
+    p.vy = 0;
+    p.onGround = true;
+  }
+  // Ceiling
+  if (p.y < 0) { p.y = 0; p.vy = 0; }
+
+  // Net barrier — applies regardless of altitude (can't cross net at any height)
+  if (isLeftPlayer) {
+    const maxX = NET_X - NET_W / 2 - PLAYER_W;
+    if (p.x > maxX) { p.x = maxX; p.vx = Math.min(p.vx, 0); }
+    if (p.x < 0)    { p.x = 0;    p.vx = Math.max(p.vx, 0); }
+  } else {
+    const minX = NET_X + NET_W / 2;
+    if (p.x < minX)                { p.x = minX;              p.vx = Math.max(p.vx, 0); }
+    if (p.x + PLAYER_W > CANVAS_W) { p.x = CANVAS_W - PLAYER_W; p.vx = Math.min(p.vx, 0); }
+  }
+}
+
 export function physicsStep(state, dt) {
+  state.players.forEach((p, i) => stepPlayer(p, dt, i === 0));
   stepBall(state.ball, dt);
 }
 
