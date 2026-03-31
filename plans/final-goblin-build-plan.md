@@ -12,7 +12,7 @@ Requires Node.js ≥18 (native ES module support). Browser target: Chrome 61+, F
 | Phase | Status | Commit | Notes |
 |-------|--------|--------|-------|
 | 1 — Scaffold & Game Loop | ✅ Done | `5427a68` | 15 files, game loop running |
-| 2 — Court & Ball Physics | ⬚ | | |
+| 2 — Court & Ball Physics | ✅ Done | `49cb755` | 7/7 tests pass, ball bouncing |
 | 3 — Player Movement & Input | ⬚ | | |
 | 4 — Hit System & Scoring | ⬚ | | |
 | 5 — AI Opponent & Mobile Controls | ⬚ | | |
