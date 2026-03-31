@@ -14,7 +14,7 @@ Requires Node.js ≥18 (native ES module support). Browser target: Chrome 61+, F
 | 1 — Scaffold & Game Loop | ✅ Done | `5427a68` | 15 files, game loop running |
 | 2 — Court & Ball Physics | ✅ Done | `49cb755` | 7/7 tests pass, ball bouncing |
 | 3 — Player Movement & Input | ✅ Done | `91f7309` | keyboard input, net barrier, goblin sprites |
-| 4 — Hit System & Scoring | ⬚ | | |
+| 4 — Hit System & Scoring | ✅ Done | `5de6ffc` | 16/16 tests, serving/scoring/win screen |
 | 5 — AI Opponent & Mobile Controls | ⬚ | | |
 | 6 — Multiplayer Server | ⬚ | | |
 | 7 — Client Networking & Lobby | ⬚ | | |
