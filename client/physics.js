@@ -16,7 +16,7 @@ export const BOUNCE_DAMP   = 0.75;
 export const RESTITUTION   = 0.85;
 export const HIT_MIN_DIST  = 8;
 
-function stepPlayer(p, dt, isLeftPlayer) {
+export function stepPlayer(p, dt, isLeftPlayer) {
   p.vy += GRAVITY * dt;
   p.x  += p.vx * dt;
   p.y  += p.vy * dt;

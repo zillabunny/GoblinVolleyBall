@@ -4,6 +4,7 @@ import { stepBall, physicsStep, GRAVITY, FLOOR_Y, BALL_RADIUS, CANVAS_W, CANVAS_
          RESTITUTION, BOUNCE_DAMP, NET_X, NET_W, NET_HEIGHT, HIT_RADIUS, HIT_POWER,
          HIT_MIN_DIST, PLAYER_W, PLAYER_H, PLAYER_SPEED }
   from '../client/physics.js';
+import { checkWin, tryHit } from '../client/game.js';
 
 test('gravity integration: vy increases by GRAVITY*dt after one step', () => {
   const b = { x: 400, y: 200, vx: 0, vy: 0 };
@@ -68,4 +69,99 @@ test('frame-rate independence: single large step vs multiple small steps give cl
   const dy = Math.abs(ballA.y - ballB.y);
   assert.ok(dx < 5, `x positions differ by ${dx}px, expected < 5px`);
   assert.ok(dy < 5, `y positions differ by ${dy}px, expected < 5px`);
+});
+
+// checkWin tests
+test('checkWin: 11-0 returns 0', () => {
+  assert.equal(checkWin([11, 0]), 0);
+});
+
+test('checkWin: 11-9 returns 0', () => {
+  assert.equal(checkWin([11, 9]), 0);
+});
+
+test('checkWin: 10-10 returns -1 (no winner)', () => {
+  assert.equal(checkWin([10, 10]), -1);
+});
+
+test('checkWin: 11-10 returns -1 (not win by 2)', () => {
+  assert.equal(checkWin([11, 10]), -1);
+});
+
+test('checkWin: 13-11 returns 0', () => {
+  assert.equal(checkWin([13, 11]), 0);
+});
+
+test('checkWin: 11-13 returns 1 (player 2 wins)', () => {
+  assert.equal(checkWin([11, 13]), 1);
+});
+
+// tryHit touch-count rule tests
+function makeState(overrides = {}) {
+  return {
+    phase: 'playing',
+    score: [0, 0],
+    touchSeq: 0,
+    touchCount: 0,
+    lastTouchPlayerIdx: -1,
+    ballSide: 0,
+    servePlayerIdx: 0,
+    phaseTimer: 0,
+    winner: -1,
+    _lastServeSeq: -1,
+    ...overrides,
+  };
+}
+
+function makePlayer(x, y) {
+  return { x, y, vx: 0, vy: 0, onGround: true, facing: 1, lastTouchSeq: -1 };
+}
+
+function makeHitInput() {
+  return { hitPressed: true, left: false, right: false, jump: false, tick() {} };
+}
+
+function makeNoHitInput() {
+  return { hitPressed: false, left: false, right: false, jump: false, tick() {} };
+}
+
+test('tryHit: same player cannot hit twice in a row', () => {
+  const state = makeState();
+  // Place player 0 at left side, ball just above player center
+  const player = makePlayer(80, FLOOR_Y - PLAYER_H);
+  const ball = { x: player.x + PLAYER_W / 2, y: player.y + PLAYER_H / 2 - 20, vx: 0, vy: 0 };
+  const input = makeHitInput();
+
+  tryHit(player, 0, input, ball, state);
+  const seqAfterFirst = state.touchSeq;
+  assert.equal(seqAfterFirst, 1, 'first hit should register');
+
+  // Try to hit again with same player
+  tryHit(player, 0, input, ball, state);
+  assert.equal(state.touchSeq, 1, 'second consecutive hit by same player should be rejected');
+});
+
+test('tryHit: 4th touch on same side is rejected', () => {
+  const state = makeState({ touchCount: 3, ballSide: 0, lastTouchPlayerIdx: 1 });
+  // Player 0 on left side (ballSide 0), touchCount already at 3
+  const player = makePlayer(80, FLOOR_Y - PLAYER_H);
+  const ball = { x: player.x + PLAYER_W / 2, y: player.y + PLAYER_H / 2 - 20, vx: 0, vy: 0 };
+  const input = makeHitInput();
+
+  tryHit(player, 0, input, ball, state);
+  assert.equal(state.touchSeq, 0, '4th touch on same side should be rejected');
+});
+
+test('tryHit: touchCount resets when ball crosses to other side', () => {
+  const state = makeState({ touchCount: 2, ballSide: 0, lastTouchPlayerIdx: 1 });
+  // Player 0 hits ball that is on right side (ballSide 1), different from state.ballSide 0
+  const player = makePlayer(380, FLOOR_Y - PLAYER_H);
+  // Ball is on right side of net (x > NET_X)
+  const ball = { x: NET_X + 30, y: player.y + PLAYER_H / 2 - 20, vx: 0, vy: 0 };
+  const input = makeHitInput();
+
+  tryHit(player, 0, input, ball, state);
+  assert.equal(state.touchSeq, 1, 'hit should register');
+  assert.equal(state.touchCount, 1, 'touchCount should reset to 1 when ball crosses to other side');
+  assert.equal(state.ballSide, 1, 'ballSide should update to new side');
 });
