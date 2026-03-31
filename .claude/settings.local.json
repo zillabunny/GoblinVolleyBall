@@ -1,0 +1,77 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/block-unsafe-generic.sh\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/block-unsafe-project.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.claude/hooks/stop-log.cjs\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.claude/hooks/subagent-stop-log.cjs\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run serve:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run test:integration:*)",
+      "Bash(npm test)",
+      "Bash(npm run verify:*)",
+      "Bash(npm run lint:*)",
+      "Bash(wc:*)",
+      "Bash(playwright-cli:*)",
+      "Read(///**)",
+      "Read(//home/vscode/.claude/**)",
+      "WebSearch",
+      "Bash(do node -c \"$file\")",
+      "Bash(echo:*)",
+      "Bash(xargs:*)",
+      "Bash(npx http-server:*)",
+      "Bash(git clone:*)",
+      "Read(//tmp/zskills/skills/**)",
+      "Read(//tmp/zskills/**)",
+      "Bash(/dev/null find:*)",
+      "Bash(cp /tmp/zskills/scripts/port.js /workspaces/GoblinVolleyball/scripts/)",
+      "Bash(cp /tmp/zskills/scripts/test-all.js /workspaces/GoblinVolleyball/scripts/)",
+      "Bash(cp /tmp/zskills/scripts/briefing.cjs /workspaces/GoblinVolleyball/scripts/)",
+      "Bash(head -5 grep -n \"TIMEZONE\\\\|CONFIGURE\\\\|placeholder\" /workspaces/GoblinVolleyball/.claude/hooks/block-unsafe-project.sh)"
+    ],
+    "deny": []
+  }
+}
