@@ -39,8 +39,14 @@ export function tryHit(player, playerIdx, input, ball, state) {
   const relX = ball.x - pcx;
   const relY = ball.y - pcy;
   const len  = Math.hypot(relX, relY);
+  const forwardSign = playerIdx === 0 ? 1 : -1;
   ball.vx = (relX / len) * HIT_POWER;
-  ball.vy = Math.min((relY / len) * HIT_POWER, -150);
+  ball.vy = Math.min((relY / len) * HIT_POWER, -200);
+  // Guarantee forward momentum — bumps and sets always travel toward the opponent
+  const MIN_FORWARD = 250;
+  if (ball.vx * forwardSign < MIN_FORWARD) {
+    ball.vx = forwardSign * MIN_FORWARD;
+  }
 }
 
 export function checkWin(score) {
@@ -74,7 +80,7 @@ export class Game {
       servePlayerIdx: 0,
       phaseTimer: 0,
       winner: -1,
-      _lastServeSeq: -1,
+      _lastServeSeq: 0,
       ball: { x: 200, y: 200, vx: 0, vy: 0 },
       players: [
         { x: 80,  y: FLOOR_Y - PLAYER_H, vx: 0, vy: 0, onGround: true, facing:  1, lastTouchSeq: -1 },
@@ -141,10 +147,12 @@ export class Game {
       // Hold ball above serve player's head; step players but not ball
       state.players.forEach((p, i) => stepPlayer(p, dt, i === 0));
       const sp = state.players[state.servePlayerIdx];
-      state.ball.x = sp.x + PLAYER_W / 2;
+      const sideSign = state.servePlayerIdx === 0 ? 1 : -1;
+      state.ball.x = sp.x + PLAYER_W / 2 + 30 * sideSign;
       state.ball.y = sp.y - BALL_RADIUS - 5;
       state.ball.vx = 0; state.ball.vy = 0;
       tryHit(state.players[0], 0, this._input, state.ball, state);
+      tryHit(state.players[1], 1, p2Input, state.ball, state);
       if (state.touchSeq > state._lastServeSeq) {
         state._lastServeSeq = state.touchSeq;
         state.phase = 'playing';

@@ -15,7 +15,7 @@ Requires Node.js ≥18 (native ES module support). Browser target: Chrome 61+, F
 | 2 — Court & Ball Physics | ✅ Done | `49cb755` | 7/7 tests pass, ball bouncing |
 | 3 — Player Movement & Input | ✅ Done | `91f7309` | keyboard input, net barrier, goblin sprites |
 | 4 — Hit System & Scoring | ✅ Done | `5de6ffc` | 16/16 tests, serving/scoring/win screen |
-| 5 — AI Opponent & Mobile Controls | ⬚ | | |
+| 5 — AI Opponent & Mobile Controls | ✅ Done | `88e39b2` | AI CPU player, touch controls |
 | 6 — Multiplayer Server | ⬚ | | |
 | 7 — Client Networking & Lobby | ⬚ | | |
 | 8 — Polish & Deploy (optional) | ⬚ | | |

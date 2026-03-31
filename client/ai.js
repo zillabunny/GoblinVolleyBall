@@ -1,12 +1,12 @@
 import { FLOOR_Y, HIT_RADIUS, HIT_MIN_DIST, NET_X, NET_W, PLAYER_W, PLAYER_H, PLAYER_SPEED } from './physics.js';
 
 export const AI_PARAMS = {
-  speedFactor:    0.85,
-  reactionDelay:  0.12,
-  errorRange:     18,
-  jumpThreshold:  FLOOR_Y - 180,
+  speedFactor:    0.92,
+  reactionDelay:  0.13,
+  errorRange:     28,
+  jumpThreshold:  FLOOR_Y - 160,
   hitThreshold:   HIT_RADIUS,
-  ballVelMinJump: 50,
+  ballVelMinJump: 30,
 };
 
 export class AIController {
@@ -22,10 +22,15 @@ export class AIController {
 
     this._timer -= dt;
     if (this._timer <= 0) {
-      this._timer   = AI_PARAMS.reactionDelay;
-      const error   = (Math.random() * 2 - 1) * AI_PARAMS.errorRange;
-      this._targetX = Math.max(NET_X + NET_W / 2,
-                      Math.min(800 - PLAYER_W, ball.x - PLAYER_W / 2 + error));
+      this._timer = AI_PARAMS.reactionDelay;
+      if (ball.x < NET_X) {
+        // Ball on opponent's side — hold neutral defensive position
+        this._targetX = 580;
+      } else {
+        const error   = (Math.random() * 2 - 1) * AI_PARAMS.errorRange;
+        this._targetX = Math.max(NET_X + NET_W / 2,
+                        Math.min(800 - PLAYER_W, ball.x - PLAYER_W / 2 + error));
+      }
     }
 
     const dx = this._targetX - player.x;
