@@ -11,7 +11,7 @@ Requires Node.js ≥18 (native ES module support). Browser target: Chrome 61+, F
 ## Progress Tracker
 | Phase | Status | Commit | Notes |
 |-------|--------|--------|-------|
-| 1 — Scaffold & Game Loop | ⬚ | | |
+| 1 — Scaffold & Game Loop | ✅ Done | `5427a68` | 15 files, game loop running |
 | 2 — Court & Ball Physics | ⬚ | | |
 | 3 — Player Movement & Input | ⬚ | | |
 | 4 — Hit System & Scoring | ⬚ | | |
