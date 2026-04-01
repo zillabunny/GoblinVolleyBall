@@ -6,7 +6,8 @@ export const TOUCH_BUTTONS = {
 };
 
 export class UI {
-  draw(ctx, state) {
+  // netStatus: optional — 'connecting'|'waiting'|'disconnected'|'closed'|null
+  draw(ctx, state, netStatus = null) {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'white';
     ctx.font = 'bold 32px monospace';
@@ -27,5 +28,25 @@ export class UI {
       ctx.font = '24px monospace';
       ctx.fillText('Press R to restart', 400, 260);
     }
+
+    // Network status overlays
+    if (netStatus === 'connecting') {
+      this._drawBanner(ctx, 'Connecting to server...');
+    } else if (netStatus === 'waiting') {
+      this._drawBanner(ctx, 'Waiting for opponent...');
+    } else if (netStatus === 'disconnected') {
+      this._drawBanner(ctx, 'Opponent disconnected — reconnecting (30s)...');
+    } else if (netStatus === 'closed') {
+      this._drawBanner(ctx, 'Connection lost. Please refresh.');
+    }
+  }
+
+  _drawBanner(ctx, text) {
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(0, 190, 800, 70);
+    ctx.fillStyle = '#ffe066';
+    ctx.font = 'bold 20px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, 400, 232);
   }
 }

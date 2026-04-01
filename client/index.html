@@ -9,10 +9,43 @@
     body { background:#111; display:flex; justify-content:center; align-items:center;
            width:100vw; height:100vh; overflow:hidden; }
     canvas { display:block; image-rendering:pixelated; }
+
+    #lobby {
+      position:fixed; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:rgba(26,15,10,0.97);
+      z-index:10;
+    }
+    #lobby h1 {
+      font:bold 52px monospace; color:#ffe066;
+      margin-bottom:12px; letter-spacing:2px;
+    }
+    #lobby p {
+      font:18px monospace; color:#b8a030;
+      margin-bottom:48px;
+    }
+    .lobby-buttons { display:flex; gap:20px; }
+    .lobby-buttons button {
+      font:bold 22px monospace; color:#fff;
+      background:#3d2b1f; border:2px solid #5a3e2b;
+      padding:18px 44px; border-radius:10px; cursor:pointer;
+      transition:background 0.15s;
+    }
+    .lobby-buttons button:hover { background:#5a3e2b; }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
+
+  <div id="lobby">
+    <h1>Goblin Volleyball</h1>
+    <p>choose your game</p>
+    <div class="lobby-buttons">
+      <button id="btn-ai">vs AI</button>
+      <button id="btn-online">vs Player</button>
+    </div>
+  </div>
+
   <script type="module" src="main.js"></script>
 </body>
 </html>

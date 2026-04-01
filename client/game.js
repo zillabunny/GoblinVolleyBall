@@ -90,14 +90,35 @@ export class Game {
     this._input = new InputState();
     this._input.bind();
     this._ai = new AIController();
+    this.onlineMode = false;
 
     window.addEventListener('keydown', e => {
-      if (e.code === 'KeyR' && this._state.phase === 'game_over') this.reset();
+      if (e.code === 'KeyR' && this._state.phase === 'game_over' && !this.onlineMode) this.reset();
     });
   }
 
   get state() {
     return this._state;
+  }
+
+  // Returns raw boolean keys for the current frame (used by online mode to send to server)
+  getInputKeys() {
+    return {
+      left:  this._input.left,
+      right: this._input.right,
+      jump:  this._input.jump,
+      hit:   this._input.hit,
+    };
+  }
+
+  // Advance one-shot input flags without running a full update (online mode)
+  tickInput() {
+    this._input.tick();
+  }
+
+  // Replace local state with authoritative server snapshot
+  applyServerState(serverState) {
+    Object.assign(this._state, serverState);
   }
 
   reset() {
