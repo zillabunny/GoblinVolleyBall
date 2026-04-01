@@ -1,8 +1,8 @@
-// server/gameRoom.js — authoritative game room: 60Hz physics, 20Hz snapshots
+// server/gameRoom.js — authoritative game room: 60Hz physics, 60Hz snapshots
 import { physicsStep, checkWin, resetPositions, FLOOR_Y, BALL_RADIUS, NET_X, PLAYER_H } from './physics.js';
 
 const TICK_HZ     = 60;
-const SNAPSHOT_HZ = 20;
+const SNAPSHOT_HZ = 60;
 const TICK_MS     = 1000 / TICK_HZ;
 
 function defaultInput() {
