@@ -67,20 +67,19 @@ function startOnline() {
     const dt = Math.min((ts - last) / 1000, 0.05);
     last = ts;
 
-    // 1. Apply latest server snapshot first (authoritative correction for ball,
-    //    opponent, score, phase — everything the server owns)
-    if (net.latestState) {
-      game.applyServerState(net.latestState);
-      net.latestState = null;
-    }
-
-    // 2. Predict local player forward from the corrected position so movement
-    //    is instant and smooth rather than waiting for the next snapshot
+    // 1. Predict local player every frame — smooth, immediate, never waits for server
     if (net.status === 'playing' && net.playerIndex !== null) {
       game.predictLocalPlayer(dt, net.playerIndex);
       net.sendInput(game.getInputKeys());
     }
     game.tickInput();
+
+    // 2. Merge server snapshot: update ball, opponent, score, phase —
+    //    but preserve the locally-predicted player position so there's no snap-back
+    if (net.latestState && net.playerIndex !== null) {
+      game.applyServerStateOnline(net.latestState, net.playerIndex);
+      net.latestState = null;
+    }
 
     renderer.draw(ctx, game.state);
     const showBanner = (net.status !== 'playing') ? net.status : null;

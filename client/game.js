@@ -116,13 +116,21 @@ export class Game {
     this._input.tick();
   }
 
-  // Replace local state with authoritative server snapshot
+  // Replace local state with authoritative server snapshot (offline / reconnect use)
   applyServerState(serverState) {
     Object.assign(this._state, serverState);
   }
 
-  // Client-side prediction for the local player only (online mode).
-  // Call AFTER applyServerState so we predict forward from the corrected position.
+  // Online-mode state merge: apply server state for ball, opponent, and game logic,
+  // but KEEP the local player's position from client-side prediction so there's no
+  // snap-back stutter. The local player's physics stays purely client-driven.
+  applyServerStateOnline(serverState, localPlayerIdx) {
+    const savedPlayer = { ...this._state.players[localPlayerIdx] };
+    Object.assign(this._state, serverState);
+    this._state.players[localPlayerIdx] = savedPlayer;
+  }
+
+  // Advance local player physics one frame (client-side prediction in online mode)
   predictLocalPlayer(dt, playerIdx) {
     applyInput(this._state.players[playerIdx], this._input);
     stepPlayer(this._state.players[playerIdx], dt, playerIdx === 0);
