@@ -13,8 +13,7 @@ export class NetworkClient {
   connect() {
     this.status = 'connecting';
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const port  = (parseInt(location.port || '80', 10) + 1);
-    const url   = `${proto}//${location.hostname}:${port}`;
+    const url   = `${proto}//${location.host}`; // same host & port as the page
 
     this._ws = new WebSocket(url);
 
