@@ -54,6 +54,9 @@ export class GameRoom {
       const dt = TICK_MS / 1000;
       physicsStep(this.state, dt, this._inputs);
       this._checkScoring();
+      // Clear one-shot flags so a held Space key doesn't re-fire every tick
+      this._inputs[0].hitPressed = false;
+      this._inputs[1].hitPressed = false;
       this._snapshotTick++;
       if (this._snapshotTick % (TICK_HZ / SNAPSHOT_HZ) === 0) {
         this._broadcast({

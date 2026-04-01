@@ -62,21 +62,43 @@ function startOnline() {
   const net = new NetworkClient();
   net.connect();
 
+  // Fixed physics dt matches the server tick rate exactly — prevents drift accumulation
+  const PHYSICS_DT = 1 / 60;
+
+  // Send input only on STATE CHANGE (not every frame) so we never hit the rate limit
+  // and hitPressed arrives as a single clean edge rather than a flood of repeated frames.
+  let _lastSent   = null;
+  let _prevStatus = net.status;
+
+  function maybeSendInput() {
+    const keys = game.getInputKeys();
+    const statusJustBecamePlaying = _prevStatus !== 'playing' && net.status === 'playing';
+    const changed = !_lastSent ||
+      keys.left  !== _lastSent.left  ||
+      keys.right !== _lastSent.right ||
+      keys.jump  !== _lastSent.jump  ||
+      keys.hit   !== _lastSent.hit;
+    if (changed || statusJustBecamePlaying) {
+      net.sendInput(keys);
+      _lastSent = { ...keys };
+    }
+    _prevStatus = net.status;
+  }
+
   let last = 0;
   function loop(ts) {
-    const dt = Math.min((ts - last) / 1000, 0.05);
+    const dt = Math.min((ts - last) / 1000, 0.05);  // keep rAF dt for render timing
     last = ts;
 
-    // 1. Predict local player movement this frame — smooth, immediate, no server wait.
-    //    This is the ONLY thing run locally; all game logic lives on the server.
+    // 1. Predict local player with FIXED dt (same as server) — keeps positions in sync
     if (net.status === 'playing' && net.playerIndex !== null) {
-      game.predictLocalPlayer(dt, net.playerIndex);
-      net.sendInput(game.getInputKeys());
+      game.predictLocalPlayer(PHYSICS_DT, net.playerIndex);
+      maybeSendInput();
     }
     game.tickInput();
 
     // 2. Apply server snapshot: ball, opponent, score, phase.
-    //    Preserves local player position; corrects ball position during serving.
+    //    Reconciles any drift in local player position toward server ground truth.
     if (net.latestState && net.playerIndex !== null) {
       game.applyServerStateOnline(net.latestState, net.playerIndex);
       net.latestState = null;

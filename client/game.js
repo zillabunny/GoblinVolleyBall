@@ -123,14 +123,35 @@ export class Game {
 
   // Online-mode state merge:
   //   • Applies server state for ball, opponent, score, phase (server is authoritative)
-  //   • Preserves the locally-predicted player position (no snap-back stutter)
-  //   • During serving: if local player is the server, recomputes ball position from
-  //     the locally-predicted player so ball stays on their head
+  //   • Keeps local player position from client-side prediction (no snap-back stutter)
+  //   • Reconciles drift: small divergence → 30% lerp toward server; large → hard snap
+  //   • During serving: recomputes ball from locally-predicted player so it stays on head
   applyServerStateOnline(serverState, localPlayerIdx) {
-    const savedPlayer = { ...this._state.players[localPlayerIdx] };
-    Object.assign(this._state, serverState);
-    this._state.players[localPlayerIdx] = savedPlayer;
+    const local = this._state.players[localPlayerIdx];
 
+    // Apply full server state (overwrites everything)
+    Object.assign(this._state, serverState);
+
+    const serverX = this._state.players[localPlayerIdx].x;
+    const serverY = this._state.players[localPlayerIdx].y;
+    const dx = serverX - local.x;
+    const dy = serverY - local.y;
+    const drift = Math.hypot(dx, dy);
+
+    // Restore locally-predicted player state, then reconcile position
+    this._state.players[localPlayerIdx] = local;
+    if (drift > 2 && drift < 60) {
+      // Small drift: smoothly correct 30% per snapshot (invisible on localhost)
+      this._state.players[localPlayerIdx].x += dx * 0.3;
+      this._state.players[localPlayerIdx].y += dy * 0.3;
+    } else if (drift >= 60) {
+      // Large drift: hard snap — something went very wrong, trust server
+      this._state.players[localPlayerIdx].x = serverX;
+      this._state.players[localPlayerIdx].y = serverY;
+    }
+    // drift <= 2: ignore — within 1 tick of normal prediction error
+
+    // During serving: position ball relative to reconciled local player
     if (this._state.phase === 'serving' &&
         this._state.servePlayerIdx === localPlayerIdx) {
       const sp       = this._state.players[localPlayerIdx];
