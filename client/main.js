@@ -67,15 +67,16 @@ function startOnline() {
     const dt = Math.min((ts - last) / 1000, 0.05);
     last = ts;
 
-    // 1. Predict local player every frame — smooth, immediate, never waits for server
+    // 1. Predict local player movement this frame — smooth, immediate, no server wait.
+    //    This is the ONLY thing run locally; all game logic lives on the server.
     if (net.status === 'playing' && net.playerIndex !== null) {
       game.predictLocalPlayer(dt, net.playerIndex);
       net.sendInput(game.getInputKeys());
     }
     game.tickInput();
 
-    // 2. Merge server snapshot: update ball, opponent, score, phase —
-    //    but preserve the locally-predicted player position so there's no snap-back
+    // 2. Apply server snapshot: ball, opponent, score, phase.
+    //    Preserves local player position; corrects ball position during serving.
     if (net.latestState && net.playerIndex !== null) {
       game.applyServerStateOnline(net.latestState, net.playerIndex);
       net.latestState = null;

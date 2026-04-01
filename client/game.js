@@ -121,16 +121,27 @@ export class Game {
     Object.assign(this._state, serverState);
   }
 
-  // Online-mode state merge: apply server state for ball, opponent, and game logic,
-  // but KEEP the local player's position from client-side prediction so there's no
-  // snap-back stutter. The local player's physics stays purely client-driven.
+  // Online-mode state merge:
+  //   • Applies server state for ball, opponent, score, phase (server is authoritative)
+  //   • Preserves the locally-predicted player position (no snap-back stutter)
+  //   • During serving: if local player is the server, recomputes ball position from
+  //     the locally-predicted player so ball stays on their head
   applyServerStateOnline(serverState, localPlayerIdx) {
     const savedPlayer = { ...this._state.players[localPlayerIdx] };
     Object.assign(this._state, serverState);
     this._state.players[localPlayerIdx] = savedPlayer;
+
+    if (this._state.phase === 'serving' &&
+        this._state.servePlayerIdx === localPlayerIdx) {
+      const sp       = this._state.players[localPlayerIdx];
+      const sideSign = localPlayerIdx === 0 ? 1 : -1;
+      this._state.ball.x = sp.x + PLAYER_W / 2 + 30 * sideSign;
+      this._state.ball.y = sp.y - BALL_RADIUS - 5;
+    }
   }
 
-  // Advance local player physics one frame (client-side prediction in online mode)
+  // Advance local player physics one frame — the only thing predicted client-side.
+  // All game logic (hits, scoring, phase transitions) is handled by the server.
   predictLocalPlayer(dt, playerIdx) {
     applyInput(this._state.players[playerIdx], this._input);
     stepPlayer(this._state.players[playerIdx], dt, playerIdx === 0);
