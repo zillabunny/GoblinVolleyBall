@@ -121,6 +121,13 @@ export class Game {
     Object.assign(this._state, serverState);
   }
 
+  // Client-side prediction for the local player only (online mode).
+  // Call AFTER applyServerState so we predict forward from the corrected position.
+  predictLocalPlayer(dt, playerIdx) {
+    applyInput(this._state.players[playerIdx], this._input);
+    stepPlayer(this._state.players[playerIdx], dt, playerIdx === 0);
+  }
+
   reset() {
     this._state.score         = [0, 0];
     this._state.winner        = -1;

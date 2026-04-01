@@ -67,21 +67,22 @@ function startOnline() {
     const dt = Math.min((ts - last) / 1000, 0.05);
     last = ts;
 
-    // Send local input to server every frame
-    if (net.status === 'playing') {
-      net.sendInput(game.getInputKeys());
-    }
-    game.tickInput();
-
-    // Apply latest authoritative state from server
+    // 1. Apply latest server snapshot first (authoritative correction for ball,
+    //    opponent, score, phase — everything the server owns)
     if (net.latestState) {
       game.applyServerState(net.latestState);
       net.latestState = null;
     }
 
-    renderer.draw(ctx, game.state);
+    // 2. Predict local player forward from the corrected position so movement
+    //    is instant and smooth rather than waiting for the next snapshot
+    if (net.status === 'playing' && net.playerIndex !== null) {
+      game.predictLocalPlayer(dt, net.playerIndex);
+      net.sendInput(game.getInputKeys());
+    }
+    game.tickInput();
 
-    // Show network banner when not yet in a match, or when disrupted
+    renderer.draw(ctx, game.state);
     const showBanner = (net.status !== 'playing') ? net.status : null;
     ui.draw(ctx, game.state, showBanner);
 
