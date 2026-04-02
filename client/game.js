@@ -129,29 +129,22 @@ export class Game {
   applyServerStateOnline(serverState, localPlayerIdx) {
     const local = this._state.players[localPlayerIdx];
 
-    // Apply full server state (overwrites everything)
+    // Apply full server state — ball, opponent, score, phase are all server-authoritative
     Object.assign(this._state, serverState);
 
-    const serverX = this._state.players[localPlayerIdx].x;
-    const serverY = this._state.players[localPlayerIdx].y;
-    const dx = serverX - local.x;
-    const dy = serverY - local.y;
-    const drift = Math.hypot(dx, dy);
+    const serverP = this._state.players[localPlayerIdx];
+    const drift   = Math.hypot(serverP.x - local.x, serverP.y - local.y);
 
-    // Restore locally-predicted player state, then reconcile position
-    this._state.players[localPlayerIdx] = local;
-    if (drift > 2 && drift < 60) {
-      // Small drift: smoothly correct 30% per snapshot (invisible on localhost)
-      this._state.players[localPlayerIdx].x += dx * 0.3;
-      this._state.players[localPlayerIdx].y += dy * 0.3;
-    } else if (drift >= 60) {
-      // Large drift: hard snap — something went very wrong, trust server
-      this._state.players[localPlayerIdx].x = serverX;
-      this._state.players[localPlayerIdx].y = serverY;
+    // Restore locally-predicted player — trust prediction entirely.
+    // Client and server run identical physics with identical dt, so on localhost
+    // drift stays near zero. Only hard-snap on extreme divergence (>100px)
+    // as a safety net for accumulated timing drift.
+    if (drift < 100) {
+      this._state.players[localPlayerIdx] = local;
     }
-    // drift <= 2: ignore — within 1 tick of normal prediction error
+    // drift >= 100: keep server state (hard snap) — something went very wrong
 
-    // During serving: position ball relative to reconciled local player
+    // During serving: position ball relative to local player so it stays on head
     if (this._state.phase === 'serving' &&
         this._state.servePlayerIdx === localPlayerIdx) {
       const sp       = this._state.players[localPlayerIdx];

@@ -71,7 +71,7 @@ export class GameRoom {
   onInput(playerIdx, keys) {
     const hitPressed           = keys.hit && !this._prevHit[playerIdx];
     this._prevHit[playerIdx]   = keys.hit;
-    this._inputs[playerIdx]    = { ...keys, hitPressed };
+    this._inputs[playerIdx]    = { ...keys, hitPressed: hitPressed || this._inputs[playerIdx].hitPressed };
   }
 
   _checkScoring() {
@@ -84,6 +84,8 @@ export class GameRoom {
         this.state.phase  = 'game_over';
         this.state.winner = w;
         this._broadcast({ type: 'game_over', payload: { winner: w, score: this.state.score } });
+        // Clean up zombie room after a short delay
+        setTimeout(() => this.close(), 5000);
       } else {
         this.state.phase         = 'point_scored';
         this.state.phaseTimer    = 1.5;

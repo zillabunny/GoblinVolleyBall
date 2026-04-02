@@ -22,7 +22,8 @@ const RANGE_START = 9000;
 const RANGE_SIZE = 51000; // 9000-60000
 
 export function getPort() {
-  if (process.env.DEV_PORT) return parseInt(process.env.DEV_PORT, 10);
+  if (process.env.PORT) return parseInt(process.env.PORT, 10);       // Fly.io / production
+  if (process.env.DEV_PORT) return parseInt(process.env.DEV_PORT, 10); // local override
 
   // Main repo gets the default port
   if (MAIN_REPO !== '{{MAIN_REPO_' + 'PATH}}' && PROJECT_ROOT === MAIN_REPO) return DEFAULT_PORT;

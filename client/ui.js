@@ -6,6 +6,10 @@ export const TOUCH_BUTTONS = {
 };
 
 export class UI {
+  constructor() {
+    this._onlineMode = false;
+  }
+
   // netStatus: optional — 'connecting'|'waiting'|'disconnected'|'closed'|null
   draw(ctx, state, netStatus = null) {
     ctx.textAlign = 'center';
@@ -26,7 +30,11 @@ export class UI {
       ctx.fillText(`GOBLIN ${state.winner + 1} WINS!`, 400, 200);
       ctx.fillStyle = 'white';
       ctx.font = '24px monospace';
-      ctx.fillText('Press R to restart', 400, 260);
+      if (this._onlineMode) {
+        ctx.fillText('Click to return to lobby', 400, 260);
+      } else {
+        ctx.fillText('Press R to restart', 400, 260);
+      }
     }
 
     // Network status overlays

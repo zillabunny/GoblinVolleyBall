@@ -1,0 +1,14 @@
+node_modules/
+.git/
+.github/
+.claude/
+.playwright/
+.vscode/
+tests/
+coverage/
+*.md
+*.log
+*.txt
+.env*
+.gitignore
+test-output.txt

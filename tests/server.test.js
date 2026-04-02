@@ -136,10 +136,10 @@ const serverWs1 = [...wss.clients].find(c => c._playerIndex === 0);
 const room = serverWs1?._room;
 ok('room was created',                   !!room);
 
-// ─── Test 2: State snapshots at ~20Hz ────────────────────────────────────────
-section('2. State snapshots (~20Hz)');
+// ─── Test 2: State snapshots at ~60Hz ────────────────────────────────────────
+section('2. State snapshots (~60Hz)');
 const snapshots = (await collectMsgs(p1, 1000)).filter(m => m.type === 'state_snapshot');
-ok(`snapshot count in 1s (got ${snapshots.length}, want 15–25)`, snapshots.length >= 15 && snapshots.length <= 25);
+ok(`snapshot count in 1s (got ${snapshots.length}, want 45–75)`, snapshots.length >= 45 && snapshots.length <= 75);
 ok('snapshot has seq',                   snapshots[0]?.payload?.seq !== undefined);
 ok('snapshot has ts',                    snapshots[0]?.payload?.ts  !== undefined);
 ok('snapshot has state',                 !!snapshots[0]?.payload?.state);
@@ -161,7 +161,7 @@ if (room) {
   room.onInput(0, { ...defaultKeys, hit: true });
   ok('first hit=true → hitPressed=true',   room._inputs[0].hitPressed === true);
   room.onInput(0, { ...defaultKeys, hit: true });
-  ok('held hit=true → hitPressed=false',   room._inputs[0].hitPressed === false);
+  ok('held hit=true → preserves unconsumed hitPressed', room._inputs[0].hitPressed === true);
   room.onInput(0, { ...defaultKeys, hit: false });
   room.onInput(0, { ...defaultKeys, hit: true });
   ok('hit after release → hitPressed=true', room._inputs[0].hitPressed === true);
