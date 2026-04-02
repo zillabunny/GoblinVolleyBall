@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Goblin Volleyball — Multiplayer Evolution</title>
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(255,224,102,0.3); }
+      50%      { box-shadow: 0 0 20px rgba(255,224,102,0.6); }
+    }
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 0.7; }
+      50%      { opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes dataFlowDown {
+      0%   { top: -8px; opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { top: calc(100% + 8px); opacity: 0; }
+    }
+    @keyframes dataFlowUp {
+      0%   { bottom: -8px; opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { bottom: calc(100% + 8px); opacity: 0; }
+    }
+    @keyframes borderGlow {
+      0%, 100% { border-color: #5a3e2b; }
+      50%      { border-color: #ffe066; }
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.5); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #1a0f0a;
+      color: #d4c8a0;
+      font-family: 'Courier New', Courier, monospace;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: #ffe066;
+      color: #1a0f0a;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: linear-gradient(180deg, #2a1a10 0%, #1a0f0a 100%);
+      border-bottom: 2px solid #3d2b1f;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ffe066, transparent);
+      animation: subtlePulse 3s ease-in-out infinite;
+    }
+    header h1 {
+      font-size: 42px;
+      color: #ffe066;
+      letter-spacing: 3px;
+      text-shadow: 0 0 30px rgba(255,224,102,0.3);
+      animation: fadeInUp 0.8s ease-out;
+    }
+    header .subtitle {
+      font-size: 16px;
+      color: #8a7a50;
+      margin-top: 8px;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    header .version-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 6px 18px;
+      background: #3d2b1f;
+      border: 1px solid #5a3e2b;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #ffe066;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    .back-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #8a7a50;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #ffe066; }
+
+    /* ── Container ──────────────────────────────────────────── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ── Section titles ─────────────────────────────────────── */
+    .section-title {
+      font-size: 26px;
+      color: #ffe066;
+      text-align: center;
+      margin: 60px 0 30px;
+      letter-spacing: 2px;
+      position: relative;
+    }
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 2px;
+      background: #5a3e2b;
+      margin: 10px auto 0;
+    }
+
+    /* ── Stats Grid ─────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 30px 0;
+    }
+    .stat-card {
+      background: #2a1a10;
+      border: 1px solid #3d2b1f;
+      border-radius: 10px;
+      padding: 24px 16px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .stat-card:hover {
+      border-color: #ffe066;
+      transform: translateY(-3px);
+    }
+    .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #ffe066;
+      display: block;
+      animation: countUp 0.6s ease-out;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #8a7a50;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* ── Timeline ───────────────────────────────────────────── */
+    .timeline {
+      position: relative;
+      padding: 20px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #3d2b1f, #5a3e2b, #3d2b1f);
+    }
+    .timeline-node {
+      position: relative;
+      margin-bottom: 24px;
+      padding-left: 68px;
+      animation: slideInLeft 0.5s ease-out both;
+    }
+    .timeline-node:nth-child(1)  { animation-delay: 0.1s; }
+    .timeline-node:nth-child(2)  { animation-delay: 0.2s; }
+    .timeline-node:nth-child(3)  { animation-delay: 0.3s; }
+    .timeline-node:nth-child(4)  { animation-delay: 0.4s; }
+    .timeline-node:nth-child(5)  { animation-delay: 0.5s; }
+    .timeline-node:nth-child(6)  { animation-delay: 0.6s; }
+    .timeline-node:nth-child(7)  { animation-delay: 0.7s; }
+    .timeline-node:nth-child(8)  { animation-delay: 0.8s; }
+    .timeline-node:nth-child(9)  { animation-delay: 0.9s; }
+
+    .timeline-dot {
+      position: absolute;
+      left: 18px;
+      top: 8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #3d2b1f;
+      border: 3px solid #5a3e2b;
+      transition: all 0.3s;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .timeline-dot.feat   { border-color: #66cc66; background: #2a4a2a; }
+    .timeline-dot.fix    { border-color: #cc8844; background: #4a3320; }
+    .timeline-dot.perf   { border-color: #6688ee; background: #2a2a4a; }
+    .timeline-dot.origin { border-color: #ffe066; background: #4a4020; animation: pulseGlow 2s ease-in-out infinite; }
+
+    .timeline-node:hover .timeline-dot {
+      transform: scale(1.3);
+      box-shadow: 0 0 16px rgba(255,224,102,0.4);
+    }
+
+    .timeline-card {
+      background: #2a1a10;
+      border: 1px solid #3d2b1f;
+      border-radius: 8px;
+      padding: 16px 20px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    .timeline-card:hover {
+      border-color: #5a3e2b;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .timeline-hash {
+      font-size: 12px;
+      color: #6a5a3a;
+      font-family: monospace;
+    }
+    .timeline-msg {
+      font-size: 15px;
+      color: #d4c8a0;
+      margin: 4px 0;
+    }
+    .timeline-date {
+      font-size: 11px;
+      color: #6a5a3a;
+    }
+    .timeline-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out, padding 0.3s;
+      font-size: 13px;
+      color: #8a7a50;
+      line-height: 1.7;
+    }
+    .timeline-detail.open {
+      max-height: 400px;
+      padding-top: 12px;
+    }
+    .timeline-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-right: 6px;
+    }
+    .tag-feat { background: #2a4a2a; color: #66cc66; }
+    .tag-fix  { background: #4a3320; color: #cc8844; }
+    .tag-perf { background: #2a2a4a; color: #6688ee; }
+
+    /* ── Before / After ─────────────────────────────────────── */
+    .comparison-grid {
+      display: grid;
+      gap: 16px;
+      margin: 30px 0;
+    }
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      align-items: stretch;
+      background: #2a1a10;
+      border: 1px solid #3d2b1f;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .comparison-row:hover {
+      border-color: #5a3e2b;
+    }
+    .comp-label {
+      font-size: 12px;
+      color: #8a7a50;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 6px 16px 0;
+      grid-column: 1 / -1;
+      background: #221510;
+      border-bottom: 1px solid #3d2b1f;
+      padding-bottom: 6px;
+    }
+    .comp-before, .comp-after {
+      padding: 14px 18px;
+      font-size: 14px;
+    }
+    .comp-before {
+      color: #885544;
+      text-decoration: line-through;
+      text-decoration-color: rgba(136,85,68,0.4);
+    }
+    .comp-after {
+      color: #66cc66;
+    }
+    .comp-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffe066;
+      font-size: 20px;
+      padding: 0 8px;
+      opacity: 0.6;
+    }
+
+    /* ── Architecture Diagram ───────────────────────────────── */
+    .arch-diagram {
+      background: #221510;
+      border: 1px solid #3d2b1f;
+      border-radius: 12px;
+      padding: 30px 20px;
+      margin: 30px 0;
+      overflow-x: auto;
+    }
+    .arch-svg {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+    }
+
+    /* ── Net diagram with CSS ───────────────────────────────── */
+    .net-diagram {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 0;
+      align-items: center;
+      min-height: 320px;
+    }
+    .net-box {
+      background: #2a1a10;
+      border: 2px solid #5a3e2b;
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+    }
+    .net-box h3 {
+      color: #ffe066;
+      font-size: 16px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .net-box ul {
+      list-style: none;
+      font-size: 12px;
+      color: #8a7a50;
+    }
+    .net-box ul li {
+      padding: 3px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+    .net-box ul li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      color: #5a3e2b;
+    }
+    .net-pipe {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      height: 100%;
+      min-height: 200px;
+    }
+    .pipe-line {
+      width: 3px;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .pipe-line.down { background: linear-gradient(180deg, #5a3e2b, #3d2b1f); }
+    .pipe-line.up   { background: linear-gradient(0deg, #5a3e2b, #3d2b1f); }
+
+    .pipe-label {
+      font-size: 10px;
+      color: #6a5a3a;
+      writing-mode: vertical-lr;
+      text-orientation: mixed;
+      padding: 6px 0;
+      white-space: nowrap;
+    }
+
+    .pipe-dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      left: -2px;
+    }
+    .pipe-line.down .pipe-dot {
+      background: #ffe066;
+      animation: dataFlowDown 2s ease-in-out infinite;
+    }
+    .pipe-line.up .pipe-dot {
+      background: #66cc66;
+      animation: dataFlowUp 2s ease-in-out infinite;
+    }
+    .pipe-line.down .pipe-dot:nth-child(2) { animation-delay: 0.7s; }
+    .pipe-line.up .pipe-dot:nth-child(2)   { animation-delay: 0.7s; }
+
+    .ws-badge {
+      background: #3d2b1f;
+      border: 1px solid #5a3e2b;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: #ffe066;
+      margin: 8px 0;
+      white-space: nowrap;
+    }
+
+    /* ── Sound Section ──────────────────────────────────────── */
+    .sound-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin: 30px 0;
+    }
+    .sound-chip {
+      background: #2a1a10;
+      border: 1px solid #3d2b1f;
+      border-radius: 8px;
+      padding: 14px 10px;
+      text-align: center;
+      font-size: 12px;
+      color: #d4c8a0;
+      transition: all 0.3s;
+    }
+    .sound-chip:hover {
+      border-color: #ffe066;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .sound-icon {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .sound-name {
+      color: #8a7a50;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid #3d2b1f;
+      margin-top: 60px;
+      color: #6a5a3a;
+      font-size: 13px;
+    }
+    footer a {
+      color: #ffe066;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      header h1 { font-size: 28px; }
+      .net-diagram { grid-template-columns: 1fr; gap: 16px; }
+      .net-pipe { flex-direction: row; min-height: auto; height: 60px; }
+      .pipe-line { width: 100%; height: 3px; }
+      .pipe-label { writing-mode: horizontal-tb; }
+      .comparison-row { grid-template-columns: 1fr; }
+      .comp-arrow { padding: 4px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">&larr; Back to Game</a>
+  <h1>Multiplayer Evolution</h1>
+  <div class="subtitle">Goblin Volleyball &mdash; from first socket to production</div>
+  <div class="version-badge">v1.1 &bull; 9 commits &bull; 2 days of iteration</div>
+</header>
+
+<div class="container">
+
+  <!-- ─── Stats ────────────────────────────────────────────── -->
+  <h2 class="section-title">By the Numbers</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-value">685</span>
+      <span class="stat-label">Lines Added</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">34</span>
+      <span class="stat-label">Lines Removed</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">14</span>
+      <span class="stat-label">Files Changed</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">9</span>
+      <span class="stat-label">Iterations</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">7</span>
+      <span class="stat-label">Sound Effects</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">60</span>
+      <span class="stat-label">Hz Snapshot Rate</span>
+    </div>
+  </div>
+
+  <!-- ─── Timeline ─────────────────────────────────────────── -->
+  <h2 class="section-title">Development Timeline</h2>
+  <div class="timeline">
+
+    <div class="timeline-node">
+      <div class="timeline-dot origin"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-feat">feat</span>
+        <span class="timeline-hash">63f6936</span>
+        <div class="timeline-msg">Phase 6: WebSocket multiplayer server</div>
+        <div class="timeline-date">The beginning &mdash; first multiplayer build</div>
+        <div class="timeline-detail">
+          Built the authoritative game server with Socket.IO. Server runs the full game simulation: physics, scoring, ball logic. Rooms hold two players. State broadcast at 20Hz. This was the foundation everything else built on.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot feat"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-feat">feat</span>
+        <span class="timeline-hash">3d21c39</span>
+        <div class="timeline-msg">Phase 7: Client networking &amp; lobby</div>
+        <div class="timeline-date">2026-04-01 00:18</div>
+        <div class="timeline-detail">
+          Added NetworkClient class, lobby UI with "vs AI" and "vs Player" buttons, and the full client-side online game loop. Players can now matchmake and play over the network. The client naively applies every server snapshot directly.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot fix"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-fix">fix</span>
+        <span class="timeline-hash">23126bc</span>
+        <div class="timeline-msg">Combine HTTP+WS on same port</div>
+        <div class="timeline-date">2026-04-01 00:36</div>
+        <div class="timeline-detail">
+          The WebSocket server and HTTP server were on different ports, causing connection failures in production. Fixed by attaching Socket.IO to the existing HTTP server. Also fixed the NetworkClient URL construction.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot perf"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-perf">perf</span>
+        <span class="timeline-hash">4950f6b</span>
+        <div class="timeline-msg">Raise snapshot rate 20Hz &rarr; 60Hz</div>
+        <div class="timeline-date">2026-04-01 00:39</div>
+        <div class="timeline-detail">
+          The 20Hz tick rate meant 50ms between state updates &mdash; players saw choppy movement and missed ball interactions. Bumping to 60Hz matched the client's render rate, giving smooth, responsive gameplay. Trade-off: more bandwidth, but Goblin Volleyball's state is tiny.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot fix"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-fix">fix</span>
+        <span class="timeline-hash">adf0946</span>
+        <div class="timeline-msg">Client-side prediction for online mode</div>
+        <div class="timeline-date">2026-04-01 02:23</div>
+        <div class="timeline-detail">
+          Without prediction, the local player felt laggy &mdash; every movement had a full round-trip delay. Added client-side prediction: the local player's position is computed immediately from input, while the server remains authoritative for the remote player, ball, and scoring.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot fix"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-fix">fix</span>
+        <span class="timeline-hash">e56d0fc</span>
+        <div class="timeline-msg">Stop server snapshots overwriting local player</div>
+        <div class="timeline-date">2026-04-01 02:34</div>
+        <div class="timeline-detail">
+          Even with prediction, server snapshots were stomping the local player's position every tick, causing visible rubber-banding. Fixed by skipping the local player's position when applying server state, letting prediction own it entirely.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot fix"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-fix">fix</span>
+        <span class="timeline-hash">87e36d4</span>
+        <div class="timeline-msg">Clean online mode &mdash; local movement only</div>
+        <div class="timeline-date">2026-04-01 02:56</div>
+        <div class="timeline-detail">
+          The client was still running full game physics (ball, opponent, scoring) locally and fighting with the server. Stripped the online loop down to: (1) apply local player input, (2) send input to server, (3) render server state. Server owns all game logic.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot fix"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-fix">fix</span>
+        <span class="timeline-hash">033e64f</span>
+        <div class="timeline-msg">Input-on-change, fixed dt, position reconciliation</div>
+        <div class="timeline-date">2026-04-01 03:06</div>
+        <div class="timeline-detail">
+          Three fixes in one: (1) Only send input when it changes instead of every frame, reducing bandwidth ~95%. (2) Use fixed timestep for deterministic physics. (3) Added position reconciliation &mdash; trust prediction normally, but hard-snap if the client drifts &gt;50px from the server.
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-node">
+      <div class="timeline-dot feat"></div>
+      <div class="timeline-card" onclick="toggleDetail(this)">
+        <span class="timeline-tag tag-feat">feat</span>
+        <span class="timeline-hash">b673a7b</span>
+        <div class="timeline-msg">Netcode fixes, sound effects, Fly.io deployment</div>
+        <div class="timeline-date">2026-04-02 07:14</div>
+        <div class="timeline-detail">
+          The final push: fixed remaining netcode edge cases, added 7 synthesized sound effects (jump, hit, bounce, net hit, score, game over, serve) using the Web Audio API, created Dockerfile and fly.toml for Fly.io deployment. The game went live.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── Before vs After ──────────────────────────────────── -->
+  <h2 class="section-title">Before vs After</h2>
+  <div class="comparison-grid">
+
+    <div class="comparison-row">
+      <div class="comp-label">Server Tick Rate</div>
+      <div class="comp-before">20 Hz snapshots (50ms gaps)</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">60 Hz snapshots (16ms, frame-matched)</div>
+    </div>
+
+    <div class="comparison-row">
+      <div class="comp-label">Client Prediction</div>
+      <div class="comp-before">None &mdash; wait for server round-trip</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">Full client-side prediction for local player</div>
+    </div>
+
+    <div class="comparison-row">
+      <div class="comp-label">Position Reconciliation</div>
+      <div class="comp-before">Server snapshot overwrites everything</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">Trust prediction, hard-snap if drift &gt; 50px</div>
+    </div>
+
+    <div class="comparison-row">
+      <div class="comp-label">Interpolation</div>
+      <div class="comp-before">Considered, partially added</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">Removed &mdash; 60Hz snapshots make it unnecessary</div>
+    </div>
+
+    <div class="comparison-row">
+      <div class="comp-label">Input Transmission</div>
+      <div class="comp-before">Send input state every frame (60/s)</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">Send only on change (~95% bandwidth reduction)</div>
+    </div>
+
+    <div class="comparison-row">
+      <div class="comp-label">Sound Effects</div>
+      <div class="comp-before">None &mdash; silent gameplay</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">7 synthesized effects via Web Audio API</div>
+    </div>
+
+    <div class="comparison-row">
+      <div class="comp-label">Deployment</div>
+      <div class="comp-before">localhost only, manual start</div>
+      <div class="comp-arrow">&rarr;</div>
+      <div class="comp-after">Dockerfile + Fly.io &mdash; live on the internet</div>
+    </div>
+
+  </div>
+
+  <!-- ─── Sound Effects ────────────────────────────────────── -->
+  <h2 class="section-title">Sound Effects</h2>
+  <p style="text-align:center; color:#8a7a50; margin-bottom:20px; font-size:14px;">
+    All 7 effects are synthesized in real-time using the Web Audio API &mdash; no audio files needed.
+  </p>
+  <div class="sound-grid">
+    <div class="sound-chip">
+      <span class="sound-icon">&#x1F3B5;</span>
+      Jump
+      <div class="sound-name">Pitch sweep up</div>
+    </div>
+    <div class="sound-chip">
+      <span class="sound-icon">&#x1F4A5;</span>
+      Hit
+      <div class="sound-name">Short noise burst</div>
+    </div>
+    <div class="sound-chip">
+      <span class="sound-icon">&#x26BD;</span>
+      Bounce
+      <div class="sound-name">Low thud</div>
+    </div>
+    <div class="sound-chip">
+      <span class="sound-icon">&#x1F3D0;</span>
+      Net Hit
+      <div class="sound-name">Metallic ping</div>
+    </div>
+    <div class="sound-chip">
+      <span class="sound-icon">&#x2B50;</span>
+      Score
+      <div class="sound-name">Rising arpeggio</div>
+    </div>
+    <div class="sound-chip">
+      <span class="sound-icon">&#x1F3C6;</span>
+      Game Over
+      <div class="sound-name">Fanfare chord</div>
+    </div>
+    <div class="sound-chip">
+      <span class="sound-icon">&#x1F3BE;</span>
+      Serve
+      <div class="sound-name">Quick pop</div>
+    </div>
+  </div>
+
+  <!-- ─── Architecture Diagram ─────────────────────────────── -->
+  <h2 class="section-title">Netcode Architecture</h2>
+  <div class="arch-diagram">
+    <div class="net-diagram">
+
+      <div class="net-box" style="animation: borderGlow 4s ease-in-out infinite;">
+        <h3>Client</h3>
+        <ul>
+          <li>Capture input (keys/touch)</li>
+          <li>Client-side prediction</li>
+          <li>Apply local player physics</li>
+          <li>Send input on change only</li>
+          <li>Receive server snapshots</li>
+          <li>Reconcile position (50px threshold)</li>
+          <li>Render: server state + local prediction</li>
+          <li>Detect &amp; play sound effects</li>
+        </ul>
+      </div>
+
+      <div class="net-pipe">
+        <div class="pipe-label">INPUT</div>
+        <div class="pipe-line down">
+          <div class="pipe-dot"></div>
+          <div class="pipe-dot"></div>
+        </div>
+        <div class="ws-badge">WebSocket</div>
+        <div class="pipe-line up">
+          <div class="pipe-dot"></div>
+          <div class="pipe-dot"></div>
+        </div>
+        <div class="pipe-label">STATE</div>
+      </div>
+
+      <div class="net-box">
+        <h3>Server</h3>
+        <ul>
+          <li>Authoritative game simulation</li>
+          <li>Full physics (ball, players, net)</li>
+          <li>Scoring &amp; phase management</li>
+          <li>60 Hz fixed-step update loop</li>
+          <li>Broadcast state snapshots</li>
+          <li>Room-based matchmaking</li>
+          <li>Apply received inputs to players</li>
+          <li>Fly.io (Docker container)</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top:24px; color:#6a5a3a; font-size:12px;">
+      <div style="display:inline-block; text-align:left; line-height:2;">
+        <span style="color:#ffe066;">&#9679;</span> Input packets: {left, right, jump, hit} &mdash; sent only when changed<br>
+        <span style="color:#66cc66;">&#9679;</span> State snapshots: full game state at 60Hz &mdash; positions, velocities, phase, score
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Lessons Learned ──────────────────────────────────── -->
+  <h2 class="section-title">Lessons Learned</h2>
+  <div style="max-width:700px; margin:0 auto 40px; font-size:14px; color:#8a7a50; line-height:1.9;">
+    <p style="margin-bottom:16px;">
+      <strong style="color:#d4c8a0;">1. Don't fight the server.</strong>
+      The first online build had the client running full physics alongside the server. Both simulated the ball, scoring, and opponent &mdash; and they disagreed constantly. The fix: strip the client to movement-only and let the server own everything else.
+    </p>
+    <p style="margin-bottom:16px;">
+      <strong style="color:#d4c8a0;">2. Interpolation isn't always the answer.</strong>
+      Classic netcode advice says to interpolate between snapshots. We tried it, but at 60Hz the snapshots arrive every 16ms &mdash; already one render frame. Interpolation added complexity and latency for zero visual benefit. Removed it.
+    </p>
+    <p style="margin-bottom:16px;">
+      <strong style="color:#d4c8a0;">3. Send less, not more.</strong>
+      Sending input every frame (60/s) was wasteful. Most frames, nothing changes. Switching to on-change-only cut bandwidth by ~95% with no gameplay impact.
+    </p>
+    <p>
+      <strong style="color:#d4c8a0;">4. Trust prediction, but verify.</strong>
+      Pure prediction without reconciliation drifts. Pure server authority without prediction feels laggy. The sweet spot: predict locally, but hard-snap back if the server says you're more than 50px off.
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>
+    <a href="index.html">Play Goblin Volleyball</a> &bull;
+    Built with goblins, WebSockets, and too many late-night debugging sessions
+  </p>
+  <p style="margin-top:8px;">
+    9 commits &bull; 685 lines &bull; 14 files &bull; Apr 1&ndash;2, 2026
+  </p>
+</footer>
+
+<script>
+function toggleDetail(card) {
+  const detail = card.querySelector('.timeline-detail');
+  if (detail) detail.classList.toggle('open');
+}
+
+// Scroll-triggered fade-in for sections
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.stat-card, .comparison-row, .sound-chip').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out, border-color 0.3s';
+  observer.observe(el);
+});
+</script>
+
+</body>
+</html>
